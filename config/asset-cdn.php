@@ -8,6 +8,7 @@ return [
 
     'filesystem' => [
         'disk' => 'asset-cdn',
+        'storage_folder' => env('CDN_STORAGE_FOLDER', ''),
 
         'options' => [
             //

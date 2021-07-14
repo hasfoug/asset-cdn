@@ -15,12 +15,13 @@ abstract class BaseCommand extends Command
 {
     /**
      * @param \Symfony\Component\Finder\SplFileInfo[] $files
+     * @param string $storageFolder
      * @return array
      */
-    protected function mapToPathname(array $files): array
+    protected function mapToPathname(array $files, string $storageFolder): array
     {
-        return array_map(function (SplFileInfo $file) {
-            return $file->getRelativePathname();
+        return array_map(function (SplFileInfo $file) use ($storageFolder) {
+            return "$storageFolder/{$file->getRelativePathname()}";
         }, $files);
     }
 }

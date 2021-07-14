@@ -35,12 +35,13 @@ class PushCommand extends BaseCommand
     public function handle(Finder $finder, FilesystemManager $filesystemManager, Repository $config)
     {
         $files = $finder->getFiles();
+        $storageFolder = ltrim($config->get('asset-cdn.filesystem.storage_folder'), '/');
 
         foreach ($files as $file) {
             $bool = $filesystemManager
                 ->disk($config->get('asset-cdn.filesystem.disk'))
                 ->putFileAs(
-                    $file->getRelativePath(),
+                    "$storageFolder/{$file->getRelativePath()}",
                     new File($file->getPathname()),
                     $file->getFilename(),
                     $config->get('asset-cdn.filesystem.options')

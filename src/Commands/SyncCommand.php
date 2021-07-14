@@ -35,6 +35,11 @@ class SyncCommand extends BaseCommand
     private $filesystemManager;
 
     /**
+     * @var string
+     */
+    private $storageFolder;
+
+    /**
      * Execute the console command.
      *
      * @param Finder $finder
@@ -46,6 +51,7 @@ class SyncCommand extends BaseCommand
     public function handle(Finder $finder, FilesystemManager $filesystemManager, Repository $config)
     {
         $this->filesystem = $config->get('asset-cdn.filesystem.disk');
+        $this->storageFolder = ltrim($config->get('asset-cdn.filesystem.storage_folder', ''), '/');
         $this->filesystemManager = $filesystemManager;
         $filesOnCdn = $this->filesystemManager
             ->disk($this->filesystem)
@@ -58,7 +64,7 @@ class SyncCommand extends BaseCommand
             $bool = $this->filesystemManager
                 ->disk($this->filesystem)
                 ->putFileAs(
-                    $file->getRelativePath(),
+                    "{$this->storageFolder}/{$file->getRelativePath()}",
                     new File($file->getPathname()),
                     $file->getFilename(),
                     $config->get('asset-cdn.filesystem.options')
@@ -95,7 +101,7 @@ class SyncCommand extends BaseCommand
 
             $filesizeOfCdn = $this->filesystemManager
                 ->disk($this->filesystem)
-                ->size($localFilePathname);
+                ->size("{$this->storageFolder}/$localFilePathname");
 
             if ($filesizeOfCdn != $localFile->getSize()) {
                 return true;
@@ -104,7 +110,7 @@ class SyncCommand extends BaseCommand
             $md5OfCdn = md5(
                 $this->filesystemManager
                     ->disk($this->filesystem)
-                    ->get($localFilePathname)
+                    ->get("{$this->storageFolder}/$localFilePathname")
             );
 
             $md5OfLocal = md5_file($localFile->getRealPath());
@@ -126,7 +132,7 @@ class SyncCommand extends BaseCommand
      */
     private function filesToDelete(array $filesOnCdn, array $localFiles): array
     {
-        $localFiles = $this->mapToPathname($localFiles);
+        $localFiles = $this->mapToPathname($localFiles, $this->storageFolder);
 
         $array = array_filter($filesOnCdn, function (string $fileOnCdn) use ($localFiles) {
             return ! in_array($fileOnCdn, $localFiles);

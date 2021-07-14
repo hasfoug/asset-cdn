@@ -21,13 +21,20 @@ if (! function_exists('mix_cdn')) {
 
         static $manifests = [];
 
+        $storageFolder = config('asset-cdn.filesystem.storage_folder', '');
+        if (! Str::startsWith($storageFolder, '/')) {
+            $storageFolder = "/{$storageFolder}";
+        }
+
         if (! Str::startsWith($path, '/')) {
             $path = "/{$path}";
         }
+        $path = $storageFolder.$path;
 
         if ($manifestDirectory && ! Str::startsWith($manifestDirectory, '/')) {
             $manifestDirectory = "/{$manifestDirectory}";
         }
+        $manifestDirectory = $storageFolder.$manifestDirectory;
 
         $manifestPath = public_path($manifestDirectory.'/mix-manifest.json');
 
@@ -71,6 +78,8 @@ if (! function_exists('asset_cdn')) {
         // Remove slashes from ending of the path
         $cdnUrl = rtrim($cdnUrl, '/');
 
-        return $cdnUrl.'/'.trim($path, '/');
+        $storageFolder = trim(config('asset-cdn.filesystem.storage_folder', ''), '/');
+
+        return $cdnUrl.'/'.$storageFolder.'/'.trim($path, '/');
     }
 }
